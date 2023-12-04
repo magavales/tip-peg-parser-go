@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-collections/collections/stack"
+	"reflect"
 	"strings"
 	"tip-peg-parser-go/pkg/expression"
 	"tip-peg-parser-go/pkg/expression/atomic"
@@ -150,9 +151,19 @@ func tryToGuessExpression(line string) (expression.Expression, error) {
 				left, err := tryToGuessExpression(matches[0][1])
 				right, err := tryToGuessExpression(matches[0][2])
 				return expression.DivExpression{BiExpression: expression.BiExpression{Left: left, Right: right}}, err
+			case expression.ExpGrtExp:
+				left, err := tryToGuessExpression(matches[0][1])
+				right, err := tryToGuessExpression(matches[0][2])
+				return expression.GreaterExpression{BiExpression: expression.BiExpression{Left: left, Right: right}}, err
+			case expression.ExpEqExp:
+				left, err := tryToGuessExpression(matches[0][1])
+				right, err := tryToGuessExpression(matches[0][2])
+				return expression.EqualExpression{BiExpression: expression.BiExpression{Left: left, Right: right}}, err
 			case expression.ExpBox:
 				exp, err := tryToGuessExpression(matches[0][1])
 				return expression.BoxExpression{Expression: exp}, err
+			default:
+				return nil, errors.New("unresolved token: " + reflect.TypeOf(token).Name())
 			}
 		}
 	}
@@ -173,6 +184,8 @@ func tryToGuessAtomic(line string) (expression.Expression, error) {
 				return atomic.IntExpression{Value: matches[0][1]}, nil
 			case expression.Input:
 				return atomic.InputExpression{}, nil
+			default:
+				return nil, errors.New("unresolved token: " + reflect.TypeOf(token).Name())
 			}
 		}
 	}
